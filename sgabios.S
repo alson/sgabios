@@ -2471,6 +2471,10 @@ post_bda_init_tail:
 	jz post_bda_init_skipsgabioslog
 	/* setup logging of last 256 characters output, if ebda has room */
 	call sgabioslog_setup_ebda
+	/* %ds=%cs because %ds was previously clobbered and we need it */
+	/* for send_asciz_out */
+	pushw %cs
+	popw %ds
 	movw $ebda_info, %si
 	call send_asciz_out
 	movw %cs:sgabios_ebda_logbuf_offset, %ax
