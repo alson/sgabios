@@ -1003,7 +1003,10 @@ translate_char_tty_tail:
  */
 
 send_char:
+	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	jz send_char_vga
 	call sgabioslog_save_char		/* save original char+pos */
+send_char_vga:
 	call translate_char
 	jmp send_char_tty_out
 	/* after ctrl translation, same as send_char_tty */
@@ -1030,7 +1033,10 @@ send_char:
 /* send character 0 - 255 in %al out through serial port */
 /* increment cursor position with CR/LF/Backspace processing */
 send_char_tty:
+	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	jz send_char_tty_vga
 	call sgabioslog_save_char		/* save original char+pos */
+send_char_tty_vga:
 	call translate_char_tty
 send_char_tty_out:
 	pushw %dx
@@ -2460,6 +2466,9 @@ post_bda_init_tail:
 	movb %ah, %cs:term_cols	/* sgabios cols */
 	/* setup in-memory logging of console if desired... */
 	call setup_memconsole
+	/* if vga attached, don't allocate an area in the ebda */
+	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	jz post_bda_init_skipsgabioslog
 	/* setup logging of last 256 characters output, if ebda has room */
 	call sgabioslog_setup_ebda
 	movw $ebda_info, %si
@@ -2472,6 +2481,7 @@ post_bda_init_tail:
 	movb %ah, %al
 	call send_number
 	call send_crlf
+post_bda_init_skipsgabioslog:
 	popw %es
 	popw %ds
 	popaw
