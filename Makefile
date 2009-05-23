@@ -16,20 +16,25 @@
 
 CFLAGS = -Wall -O2 -s
 
-.SUFFIXES: .bin
+.SUFFIXES: .tmpbin
 
 all: sgabios.bin
 
-sgabios.bin: sgabios.S version.h
+# FIXME: should calculate the size by rounding it up to the nearest
+# 512-byte boundary
+sgabios.bin: sgabios.tmpbin buildrom.py
+	./buildrom.py sgabios.tmpbin sgabios.bin
+
+sgabios.tmpbin: sgabios.S version.h
 
 version.h: Makefile sgabios.S
 	@echo '#define BIOS_BUILD_DATE "'`date -u +%D`'"' >version.h
 	@echo '#define BIOS_FULL_DATE "'`date -u`'"' >>version.h
 	@echo '#define BIOS_BUILD_HOST "'`echo $$LOGNAME@$$HOSTNAME`'"' >>version.h
 
-.S.bin:
+.S.tmpbin:
 	$(CC) -c $(CFLAGS) $*.S -o $*.o
-	$(LD) -Ttext 0x0 -s --oformat binary $*.o -o $*.bin
+	$(LD) -Ttext 0x0 -s --oformat binary $*.o -o $*.tmpbin
 
 clean:
-	$(RM) *.s *.o *.bin *.srec *.com version.h
+	$(RM) *.s *.o *.tmpbin *.bin *.srec *.com version.h
