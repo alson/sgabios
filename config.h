@@ -7,5 +7,5 @@
 
 /* serial costants that may require modification */
 #define COM_BASE_ADDR           0x3f8
-#define PORT_SPEED		115200
+#define PORT_SPEED		57600
 #define LCR_VALUE		0x13	/* 8n1 */
