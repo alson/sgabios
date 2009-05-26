@@ -28,11 +28,6 @@
 #define SGABIOS_EBDA_POS_START	(SGABIOS_EBDA_LOG_START+SGABIOS_EBDA_LOG_SIZE)
 #define SGABIOS_EBDA_POS_LAST	(SGABIOS_EBDA_POS_START+(SGABIOS_EBDA_LOG_SIZE*2)-2)
 
-/* serial costants that may require modification */
-#define COM_BASE_ADDR           0x3f8
-#define PORT_SPEED		115200
-#define LCR_VALUE		0x13	/* 8n1 */
-
 /* serial constants below shouldn't require modification */
 #define IER_OFFSET              0x01
 #define FCR_OFFSET              0x02

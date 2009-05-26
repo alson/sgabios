@@ -4,3 +4,8 @@
  * f000:f065).
  */
 #undef FORCE_VBIOS_PRESENT
+
+/* serial costants that may require modification */
+#define COM_BASE_ADDR           0x3f8
+#define PORT_SPEED		115200
+#define LCR_VALUE		0x13	/* 8n1 */
