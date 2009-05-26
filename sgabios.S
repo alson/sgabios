@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "config.h"
 #include "version.h"
 
 /* don't allocate ebda if new value at 0x40e will be less than this */
@@ -76,6 +77,13 @@
 #define BDA_ROM_OFF		0x67
 #define BDA_ROM_SEG		0x69
 #define BDA_ROWS		0x84
+
+#ifdef FORCE_VBIOS_PRESENT
+/* always set zero flag */
+# define CHECK_VGA cmpw %ax, %ax
+#else
+# define CHECK_VGA cmpw $0xc000, %cs:old_int10h_seg
+#endif
 
 .code16
 .org 0x0
@@ -1005,7 +1013,7 @@ translate_char_tty_tail:
  */
 
 send_char:
-	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	CHECK_VGA			/* vga attached? */
 	jz send_char_vga
 	call sgabioslog_save_char		/* save original char+pos */
 send_char_vga:
@@ -1035,7 +1043,7 @@ send_char_vga:
 /* send character 0 - 255 in %al out through serial port */
 /* increment cursor position with CR/LF/Backspace processing */
 send_char_tty:
-	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	CHECK_VGA			/* vga attached? */
 	jz send_char_tty_vga
 	call sgabioslog_save_char		/* save original char+pos */
 send_char_tty_vga:
@@ -2139,7 +2147,7 @@ scroll_page_down:
  */
 
 bail_if_vga_attached:
-	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	CHECK_VGA	/* vga attached? */
 	jnz bail_tail	/* if not, don't modify stack */
 	addw $2, %sp	/* else drop first return address */
 bail_tail:
@@ -2236,7 +2244,7 @@ int10h_default:
 	popw %ax		/* pop chain_isr10h return address */
 chain_isr10h:
 	popw %dx		/* pop saved cursor */
-	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	CHECK_VGA		/* vga attached? */
 	jnz chain_post_cursor	/* if not, don't restore the cursor */
 	call set_current_cursor	/* restore cursor if video card connected */
 chain_post_cursor:
@@ -2388,7 +2396,7 @@ input_final_r:
 	cmpb $0x52, %al		/* is al = 'R' ? */
 	jnz suspect_loopback	/* invalid input found */
 	movb %bl, %cs:term_rows	/* save away bl rows value */
-	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	CHECK_VGA		/* vga attached? */
 	jz resize_end		/* if so, leave term_cols at 80 */
 	movb %bh, %cs:term_cols	/* save away bh cols value */
 	jmp resize_end
@@ -2426,7 +2434,7 @@ resize_end:
 	call send_asciz_out
 	call send_crlf
 	/* if vga attached, skip terminal message and bda setup... */
-	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	CHECK_VGA		/* vga attached? */
 	jz post_bda_init_tail	/* if so, don't modify BDA */
 	/* show detected terminal size, or default if none detected */
 	movw $term_info, %si
@@ -2469,7 +2477,7 @@ post_bda_init_tail:
 	/* setup in-memory logging of console if desired... */
 	call setup_memconsole
 	/* if vga attached, don't allocate an area in the ebda */
-	cmpw $0xc000, %cs:old_int10h_seg	/* vga attached? */
+	CHECK_VGA		/* vga attached? */
 	jz post_bda_init_skipsgabioslog
 	/* setup logging of last 256 characters output, if ebda has room */
 	call sgabioslog_setup_ebda

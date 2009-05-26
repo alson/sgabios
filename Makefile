@@ -25,7 +25,7 @@ all: sgabios.bin
 sgabios.bin: sgabios.tmpbin buildrom.py
 	./buildrom.py sgabios.tmpbin sgabios.bin
 
-sgabios.tmpbin: sgabios.S version.h
+sgabios.tmpbin: sgabios.S version.h config.h
 
 version.h: Makefile sgabios.S
 	@echo '#define BIOS_BUILD_DATE "'`date -u +%D`'"' >version.h
