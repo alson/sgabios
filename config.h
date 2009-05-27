@@ -3,7 +3,7 @@
  * int 10h handler in a segment other than c000 (usually at address 
  * f000:f065).
  */
-#undef FORCE_VBIOS_PRESENT
+#define FORCE_VBIOS_PRESENT
 
 /* serial costants that may require modification */
 #define COM_BASE_ADDR           0x3f8
