@@ -405,7 +405,7 @@ sgabioslog_setup_ebda:
 	pushw $BDA_SEG
 	popw %ds			/* ds = 0x40 */
 	movw BDA_EBDA, %ax		/* ax = old ebda segment from 0x0e */
-	or %ax, %ax			/* EBDA segment = 0 -> no EBDA */
+	orw %ax, %ax			/* EBDA segment = 0 -> no EBDA */
 	jz sgabioslog_setup_ebda_tail
 	subw $SGABIOS_EBDA_DELTA, %ax
 	movw %ax, %es			/* es = new EBDA segment start */
